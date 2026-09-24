@@ -26,11 +26,12 @@ def main(argv=None) -> int:
         return 0
 
     if args.carve:
-        from salvage.carver import carve_file
+        from salvage.carver import carve_file, normalize_source
         try:
-            found = carve_file(args.carve, args.out)
+            found = carve_file(normalize_source(args.carve), args.out)
         except Exception as exc:
             print(f"carve failed: {exc}")
+            print("(Carving a live drive needs an elevated shell — run PowerShell as admin.)")
             return 1
         print(f"carved {len(found)} files into {args.out}")
         for f in found:
@@ -38,9 +39,10 @@ def main(argv=None) -> int:
         return 0
 
     if args.recover:
+        from salvage.carver import normalize_source
         from salvage.engine import open_image, recover_deleted
         try:
-            img = open_image(args.recover)
+            img = open_image(normalize_source(args.recover))
             found = recover_deleted(img, args.out, fs_offset=args.offset)
         except Exception as exc:
             print(f"recover failed: {exc}")

@@ -29,6 +29,25 @@ import time
 from pathlib import Path
 
 
+def normalize_source(path: str) -> str:
+    """Turn a user-friendly drive reference into the raw volume device path.
+
+    'E' / 'E:' / 'E:\\' -> '\\\\.\\E:'   (live volume carve — needs admin)
+    '\\\\.\\E:'         -> unchanged      (already raw)
+    a real file path    -> unchanged      (.img / .dd image)
+
+    This is the same mapping drives.list_drives() already does for the dashboard;
+    the CLI was missing it, so 'py run.py --carve E' opened "E" as a FILE and
+    recovered nothing.
+    """
+    p = str(path).strip().rstrip("\\")
+    if p.startswith("\\\\.\\") or p.startswith("//./"):
+        return p
+    if len(p) in (1, 2) and p[0].isalpha() and (len(p) == 1 or p[1] == ":"):
+        return f"\\\\.\\{p[0]}:"
+    return p
+
+
 class _Stalled(Exception):
     """Raised when a scan runs past its deadline — cleanly aborts the worker."""
 
