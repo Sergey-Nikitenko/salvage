@@ -3,3 +3,6 @@ __pycache__/
 *.pyo
 .venv/
 recovered/
+build/
+dist/
+Salvage.ico
