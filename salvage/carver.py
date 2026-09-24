@@ -25,6 +25,7 @@ using random-access reads so we never load the whole disk into memory.
 from __future__ import annotations
 
 import os
+import re
 import time
 from pathlib import Path
 
@@ -346,7 +347,46 @@ def _extract_png(rd, off: int):
 
 
 def _extract_pdf(rd, off: int):
-    return _extract_footer(rd, off, b"%PDF", b"%%EOF")
+    """Recover a PDF up to its LAST %%EOF, not the first.
+
+    A PDF is appended to on every incremental save, so it can hold several
+    %%EOF markers — the FIRST one ends revision 1 and would truncate the file.
+    Binary streams can also contain stray "%%EOF" bytes. So we scan to the true
+    end and lightly validate that a startxref points at an xref table (or a
+    cross-reference-stream object) inside the recovered bytes, so a fragmented
+    free-space hit isn't emitted as an "unopenable PDF"."""
+    size = rd.size
+    pos = off + len(b"%PDF")
+    limit = min(off + MAX_CHUNK, size)
+    last_eof = None
+    while pos < limit:
+        block = rd.read(pos, min(1024 * 1024, limit - pos))
+        if not block:
+            break
+        j = block.find(b"%%EOF")
+        while j >= 0:
+            last_eof = pos + j + len(b"%%EOF")
+            j = block.find(b"%%EOF", j + 1)
+        pos += len(block)
+    if last_eof is None:
+        return None
+    blob = rd.read(off, last_eof - off)
+
+    # Validate: a real PDF ends with startxref <offset> %%EOF, and that offset
+    # points at the xref table / cross-reference-stream object.
+    idx = blob.rfind(b"startxref")
+    if idx < 0:
+        return None
+    m = re.search(rb"startxref\s+(\d+)", blob[idx:])
+    if not m:
+        return None
+    xref_off = int(m.group(1))
+    if xref_off <= 0 or xref_off >= len(blob) - 4:
+        return None
+    at = blob[xref_off:xref_off + 4]
+    if at != b"xref" and not re.match(rb"\d+\s+\d+\s+obj", blob[xref_off:xref_off + 32]):
+        return None
+    return blob, last_eof
 
 
 def _extract_zip(rd, off: int):
