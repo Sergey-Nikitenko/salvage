@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Salvage — the deep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #04101C;
+    --bg-2: #071A28;
+    --card: #0A2030;
+    --line: #14344A;
+    --text: #E8F4F8;
+    --muted: #7FA3B3;
+    --glow: #3FE0C9;    /* bioluminescent cyan-teal */
+    --emerald: #2FE08B;
+    --deep: #2E6EE6;     /* deep azure */
+    --violet: #6E7BFF;
+    --gold: #FFD98A;     /* recovered treasure */
+    --display: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    --body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --mono: "Space Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--text); font-family: var(--body);
+    line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; min-height: 100vh;
+  }
+
+  /* ---------- the deep (atmosphere) ---------- */
+  .atmosphere { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .atmosphere > * { position: absolute; }
+  .surface { inset: 0 0 auto 0; height: 70vh; background: radial-gradient(130% 100% at 50% -10%, rgba(63,224,201,0.16), transparent 62%); }
+  .rays { inset: -20% -20% 0 -20%;
+    background:
+      linear-gradient(167deg, transparent 32%, rgba(63,224,201,0.07) 46%, transparent 62%),
+      linear-gradient(148deg, transparent 50%, rgba(46,110,230,0.06) 63%, transparent 78%),
+      linear-gradient(174deg, transparent 18%, rgba(63,224,201,0.05) 38%, transparent 54%),
+      linear-gradient(160deg, transparent 62%, rgba(110,123,255,0.04) 74%, transparent 86%);
+    filter: blur(7px);
+  }
+  .caustic { inset: -10%; background: conic-gradient(from 0deg at 50% 8%, transparent 0deg, rgba(63,224,201,0.05) 50deg, transparent 110deg, rgba(47,224,139,0.04) 210deg, transparent 270deg); animation: causticDrift 46s linear infinite; }
+  @keyframes causticDrift { to { transform: rotate(360deg); } }
+  .depth { inset: 0; background: linear-gradient(180deg, transparent 0%, transparent 52%, rgba(2,6,12,0.78) 100%); }
+  .grain { inset: 0; opacity: 0.05; mix-blend-mode: overlay; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  /* drifting bioluminescent specks */
+  .plankton span { position: absolute; border-radius: 50%; background: rgba(63,224,201,0.7); box-shadow: 0 0 8px rgba(63,224,201,0.8); animation: rise linear infinite; }
+  .plankton span:nth-child(1) { left: 12%; width: 3px; height: 3px; animation-duration: 17s; animation-delay: 0s; }
+  .plankton span:nth-child(2) { left: 28%; width: 2px; height: 2px; animation-duration: 24s; animation-delay: 4s; }
+  .plankton span:nth-child(3) { left: 46%; width: 4px; height: 4px; animation-duration: 20s; animation-delay: 9s; opacity: 0.7; }
+  .plankton span:nth-child(4) { left: 64%; width: 2px; height: 2px; animation-duration: 28s; animation-delay: 2s; }
+  .plankton span:nth-child(5) { left: 81%; width: 3px; height: 3px; animation-duration: 22s; animation-delay: 7s; }
+  .plankton span:nth-child(6) { left: 92%; width: 2px; height: 2px; animation-duration: 26s; animation-delay: 12s; }
+  @keyframes rise { from { transform: translateY(105vh); opacity: 0; } 12% { opacity: 1; } 88% { opacity: 1; } to { transform: translateY(-8vh); opacity: 0; } }
+
+  /* ---------- header ---------- */
+  header { position: sticky; top: 0; z-index: 50; background: rgba(4,16,28,0.7); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  .nav { max-width: 1120px; margin: 0 auto; padding: 0 24px; height: 70px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .orb { width: 34px; height: 34px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, rgba(63,224,201,0.95), rgba(46,110,230,0.35) 55%, transparent 74%); box-shadow: 0 0 18px rgba(63,224,201,0.5); position: relative; }
+  .orb::before { content: ""; position: absolute; inset: -5px; border-radius: 50%; border: 1px solid rgba(63,224,201,0.55); animation: spin 10s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .logo .word {
+    font-family: var(--display); font-size: 1.35rem; font-weight: 700; letter-spacing: 0.05em;
+    background: linear-gradient(100deg, var(--text) 0%, var(--glow) 40%, var(--deep) 55%, var(--text) 85%);
+    background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    animation: shimmer 7s linear infinite;
+  }
+  @keyframes shimmer { to { background-position: -220% 0; } }
+  .tag { font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+
+  main { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* ---------- intro + ghost ---------- */
+  .ghost-wrap { position: relative; text-align: center; padding: 40px 0 10px; }
+  .ghost {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-family: var(--display); font-weight: 700; font-size: clamp(90px, 18vw, 220px); line-height: 1;
+    letter-spacing: -0.03em; color: transparent; -webkit-text-stroke: 1px rgba(63,224,201,0.13);
+    pointer-events: none; user-select: none; white-space: nowrap; z-index: 0;
+  }
+  .intro { position: relative; z-index: 1; }
+  .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.34em; text-transform: uppercase; color: var(--glow); }
+  .intro h1 { font-family: var(--display); font-weight: 700; font-size: clamp(40px, 7vw, 84px); line-height: 1.02; letter-spacing: -0.02em; text-shadow: 0 0 44px rgba(63,224,201,0.3); margin-top: 10px; }
+  .intro h1 .accent { color: var(--glow); }
+  .intro .sub { margin: 14px auto 0; max-width: 54ch; color: var(--muted); font-size: 16px; }
+
+  /* ---------- panels ---------- */
+  .panel {
+    position: relative; z-index: 1;
+    background: linear-gradient(160deg, var(--card), var(--bg-2));
+    border: 1px solid var(--line); border-radius: 20px; padding: 28px;
+    margin-top: 28px; box-shadow: 0 0 44px rgba(46,110,230,0.14);
+  }
+  .label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--glow); margin-bottom: 18px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  input, select {
+    flex: 1; min-width: 200px; background: var(--bg-2); border: 1px solid var(--line);
+    border-radius: 999px; padding: 13px 20px; font-size: 14px; color: var(--text); font-family: var(--mono);
+  }
+  input::placeholder { color: var(--muted); }
+  input:focus, select:focus { outline: none; border-color: var(--glow); box-shadow: 0 0 18px rgba(63,224,201,0.28); }
+  .btn {
+    display: inline-block; padding: 13px 28px; border-radius: 999px; border: none; cursor: pointer;
+    font-weight: 600; font-size: 0.9rem; font-family: var(--body); letter-spacing: 0.02em;
+    background: linear-gradient(100deg, var(--glow), var(--deep)); color: #02101A;
+    box-shadow: 0 0 22px rgba(63,224,201,0.4); transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 0 36px rgba(63,224,201,0.65); }
+  .btn:disabled { opacity: 0.5; cursor: default; }
+  .btn-ghost { display: inline-block; padding: 13px 20px; border-radius: 999px; border: 1px solid var(--line); background: rgba(7,26,40,0.5); color: var(--text); font-weight: 600; font-size: 0.9rem; cursor: pointer; font-family: var(--body); letter-spacing: 0.02em; transition: border-color 0.12s ease, box-shadow 0.12s ease; }
+  .btn-ghost:hover { border-color: var(--glow); color: var(--glow); box-shadow: 0 0 18px rgba(63,224,201,0.25); }
+  .status { margin-top: 14px; font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: 0.05em; }
+  .status.live { color: var(--glow); }
+
+  /* ---------- the haul ---------- */
+  .results { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .file {
+    background: linear-gradient(160deg, var(--card), var(--bg-2));
+    border: 1px solid var(--line); border-radius: 14px; padding: 18px;
+    border-top: 3px solid var(--glow);
+    transition: box-shadow 0.16s ease, transform 0.16s ease;
+  }
+  .file:hover { box-shadow: 0 14px 40px rgba(0,0,0,0.45), 0 0 32px rgba(63,224,201,0.18); transform: translateY(-3px); }
+  .file .name { font-family: var(--mono); font-size: 13px; color: var(--text); word-break: break-all; }
+  .file .meta { margin-top: 8px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.03em; background: rgba(63,224,201,0.14); color: var(--glow); }
+  .empty { grid-column: 1 / -1; text-align: center; color: var(--muted); font-family: var(--mono); padding: 30px; }
+
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(63,224,201,0.25); border-top-color: var(--glow); border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; }
+
+  .progress { height: 6px; background: rgba(0,0,0,0.45); border: 1px solid var(--line); border-radius: 3px; overflow: hidden; margin-top: 12px; }
+  .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--glow), var(--deep)); transition: width 0.4s ease; }
+
+  .file { cursor: pointer; }
+  .file .peek { margin-top: 6px; font-family: var(--mono); font-size: 10px; color: var(--glow); opacity: 0.7; }
+
+  .types-wrap { display: none; flex-wrap: wrap; gap: 12px 20px; align-items: flex-start; padding-top: 12px; }
+  .typegroup { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .typegroup .glabel { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); opacity: 0.7; margin-right: 2px; min-width: 52px; }
+  .tchip { cursor: pointer; }
+  .tchip input { display: none; }
+  .tchip span { display: inline-block; padding: 5px 12px; border: 1px solid var(--line); border-radius: 999px; font-family: var(--mono); font-size: 11px; color: var(--muted); transition: all 0.12s ease; }
+  .tchip:hover span { border-color: var(--glow); color: var(--text); }
+  .tchip input:checked + span { background: rgba(63,224,201,0.16); color: var(--glow); border-color: var(--glow); box-shadow: 0 0 12px rgba(63,224,201,0.15); }
+
+  /* inspection modal */
+  .overlay {
+    position: fixed; inset: 0; z-index: 50; display: none;
+    background: rgba(2, 8, 16, 0.72); backdrop-filter: blur(4px);
+    align-items: center; justify-content: center; padding: 24px;
+  }
+  .overlay.open { display: flex; }
+  .inspect {
+    background: linear-gradient(160deg, var(--card), var(--bg-2));
+    border: 1px solid var(--line); border-radius: 16px;
+    max-width: 760px; width: 100%; max-height: 88vh; overflow: auto;
+    padding: 24px; border-top: 3px solid var(--glow);
+  }
+  .inspect h3 { font-family: var(--mono); font-size: 13px; color: var(--text); word-break: break-all; margin: 0 0 8px; padding-right: 40px; }
+  .inspect .type { color: var(--gold); font-weight: 700; }
+  .inspect .warn { color: #ffb3a0; font-size: 12px; margin: 12px 0; }
+  .inspect .dump {
+    background: rgba(0,0,0,0.35); border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px; font-family: var(--mono); font-size: 11px; line-height: 1.55;
+    white-space: pre-wrap; word-break: break-all; margin: 10px 0; max-height: 200px; overflow: auto;
+  }
+  .inspect .strings { font-family: var(--mono); font-size: 11px; color: var(--muted); white-space: pre-wrap; max-height: 180px; overflow: auto; }
+  .inspect .btnrow { display: flex; gap: 12px; margin-top: 16px; align-items: center; flex-wrap: wrap; }
+  .inspect .close { position: absolute; top: 14px; right: 14px; }
+  .inspect { position: relative; }
+
+  footer { position: relative; z-index: 1; padding: 28px 24px 48px; text-align: center; color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; }
+  footer .stat { color: var(--gold); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .caustic, .plankton span, .orb::before, .logo .word { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="atmosphere">
+  <div class="surface"></div>
+  <div class="rays"></div>
+  <div class="caustic"></div>
+  <div class="depth"></div>
+  <div class="grain"></div>
+  <div class="plankton"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+</div>
+
+<header>
+  <div class="nav">
+    <div class="logo"><span class="orb"></span><span class="word">SALVAGE</span></div>
+    <span class="tag">deleted ≠ gone</span>
+  </div>
+</header>
+
+<main>
+  <div class="ghost-wrap">
+    <div class="ghost">THE DEEP</div>
+    <div class="intro">
+      <div class="eyebrow">the deep</div>
+      <h1>Bring back <span class="accent">what sank.</span></h1>
+      <p class="sub">Point Salvage into the abyss and it hauls back the files the filesystem forgot — by signature, or by the master file table.</p>
+    </div>
+  </div>
+
+  <section class="panel">
+    <div class="label">The dive</div>
+    <div class="row">
+      <select id="drive">
+        <option value="">Custom path…</option>
+      </select>
+      <input id="image" placeholder="custom path — where to search (folder, drive, or image)">
+      <button class="btn-ghost" id="browse-file" type="button">Browse…</button>
+      <select id="mode">
+        <option value="carve">Carve · signatures</option>
+        <option value="recover">MFT · deleted files</option>
+      </select>
+      <select id="scanmode">
+        <option value="quick">Quick scan</option>
+        <option value="full">Full scan</option>
+        <option value="targeted">Targeted scan</option>
+      </select>
+      <label class="tchip" id="delonly-wrap" style="display:none" title="Carve only unallocated (free) space — exFAT">
+        <input type="checkbox" id="deleted-only"><span>Deleted only</span>
+      </label>
+      <input id="out" placeholder="output folder (default: recovered)">
+      <button class="btn-ghost" id="browse" type="button">Browse…</button>
+      <button class="btn" id="scan">Dive</button>
+      <button class="btn-ghost" id="cancel" type="button" style="display:none">Cancel</button>
+    </div>
+    <div id="types-wrap" class="types-wrap">
+      <span class="typegroup"><span class="glabel">images</span>
+        <label class="tchip"><input type="checkbox" class="ftype" value="png"><span>PNG</span></label>
+        <label class="tchip"><input type="checkbox" class="ftype" value="jpg"><span>JPG</span></label>
+        <label class="tchip"><input type="checkbox" class="ftype" value="gif"><span>GIF</span></label>
+      </span>
+      <span class="typegroup"><span class="glabel">docs</span>
+        <label class="tchip"><input type="checkbox" class="ftype" value="pdf"><span>PDF</span></label>
+        <label class="tchip"><input type="checkbox" class="ftype" value="doc"><span>DOC</span></label>
+        <label class="tchip"><input type="checkbox" class="ftype" value="office"><span>XLSX/PPTX</span></label>
+      </span>
+      <span class="typegroup"><span class="glabel">archives</span>
+        <label class="tchip"><input type="checkbox" class="ftype" value="zip"><span>ZIP</span></label>
+      </span>
+      <span class="typegroup"><span class="glabel">media</span>
+        <label class="tchip"><input type="checkbox" class="ftype" value="mp3"><span>MP3</span></label>
+        <label class="tchip"><input type="checkbox" class="ftype" value="wav"><span>WAV</span></label>
+        <label class="tchip"><input type="checkbox" class="ftype" value="mp4"><span>MP4</span></label>
+      </span>
+      <span class="typegroup"><span class="glabel">other</span>
+        <label class="tchip"><input type="checkbox" class="ftype" value="exe"><span>EXE</span></label>
+      </span>
+    </div>
+    <p class="status" id="status">idle</p>
+    <div class="progress" id="pbar" style="display:none"><div class="progress-fill" id="pfill"></div></div>
+  </section>
+
+  <section class="panel">
+    <div class="label">The haul</div>
+    <div class="results" id="results"><div class="empty">Nothing recovered yet. Point Salvage into the dark and dive.</div></div>
+  </section>
+</main>
+
+<footer>
+  <span class="stat" id="count">0</span> files · <span id="bytes">0</span> recovered · SALVAGE
+</footer>
+
+<div class="overlay" id="overlay">
+  <div class="inspect">
+    <button class="btn-ghost close" id="insp-close" type="button">close</button>
+    <h3 id="insp-name"></h3>
+    <div><span class="badge type" id="insp-type"></span><span id="insp-size" style="color:var(--muted);font-family:var(--mono);font-size:12px;margin-left:8px"></span></div>
+    <div class="warn" id="insp-warn"></div>
+    <div class="dump" id="insp-hex"></div>
+    <div class="strings" id="insp-strings"></div>
+    <div class="btnrow">
+      <button class="btn-ghost" id="insp-scan" type="button">Scan with Defender</button>
+      <span id="insp-scan-out" style="color:var(--muted);font-family:var(--mono);font-size:11px"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const statusEl = $('status');
+
+  function setStatus(msg, live) { statusEl.textContent = msg; statusEl.className = 'status' + (live ? ' live' : ''); }
+  function fmt(n) {
+    if (n >= 1048576) return (n / 1048576).toFixed(1) + ' MB';
+    if (n >= 1024) return (n / 1024).toFixed(1) + ' KB';
+    return n + ' B';
+  }
+  function fmtDur(s) {
+    if (s == null || !isFinite(s) || s < 0) return '';
+    s = Math.round(s);
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+    if (h > 0) return h + 'h ' + m + 'm ' + sec + 's';
+    if (m > 0) return m + 'm ' + sec + 's';
+    return sec + 's';
+  }
+  // Assemble the dive clock from the progress payload (elapsed/rate/remaining may be null).
+  function eta(p) {
+    const parts = [];
+    if (p.elapsed != null) parts.push('elapsed ' + fmtDur(p.elapsed));
+    if (p.rate != null && p.rate > 0) parts.push(fmt(p.rate) + '/s');
+    if (p.remaining != null && p.remaining > 0) parts.push('~' + fmtDur(p.remaining) + ' left');
+    return parts.join(' · ');
+  }
+
+  async function scan() {
+    const image = $('drive').value || $('image').value.trim();
+    const mode = $('mode').value;
+    const out = $('out').value.trim() || 'recovered';
+    const scanmode = $('scanmode').value;
+    const types = [...document.querySelectorAll('.ftype:checked')].map(c => c.value);
+    if (!image) { setStatus('pick a drive or enter a path first', false); return; }
+    $('scan').disabled = true;
+    $('cancel').style.display = '';
+    setStatus('descending…', true);
+    $('results').innerHTML = '<div class="empty"><span class="spinner"></span> descending…</div>';
+    $('pbar').style.display = 'block';
+    $('pfill').style.width = '0%';
+    try {
+      const endpoint = mode === 'recover' ? '/api/recover' : '/api/carve';
+      const payload = mode === 'recover' ? { image, out, scanmode, types } : { image, out, deleted_only: $('deleted-only').checked };
+      const start = await (await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })).json();
+      if (!start.ok) { setStatus(start.error || 'failed', false); render([]); $('pbar').style.display = 'none'; return; }
+      for (let i = 0; i < 7200; i++) {
+        await new Promise(r => setTimeout(r, 1000));
+        const p = await (await fetch('/api/progress')).json();
+        if (p.pct != null) {
+          $('pfill').style.width = (p.pct || 0) + '%';
+          const clock = eta(p);
+          setStatus('descending… ' + p.pct + '%  (' + fmt(p.scanned || 0) + ' / ' + fmt(p.total || 0) + ')  ·  ' + p.found + ' found' + (clock ? '  ·  ' + clock : ''), true);
+        } else {
+          $('pfill').style.width = '100%';
+          const clock = eta(p);
+          setStatus('descending… ' + (p.scanned ? p.scanned + ' dirs · ' : '') + p.found + ' files found' + (p.deep ? ' (deep)' : '') + (clock ? '  ·  ' + clock : ''), true);
+        }
+        if (p.done) {
+          $('pbar').style.display = 'none';
+          if (p.cancel) {
+            render(p.files || []);
+            setStatus('dive cancelled — ' + p.found + ' files kept → ' + p.out, false);
+            $('count').textContent = p.found || 0;
+            $('bytes').textContent = fmt((p.files || []).reduce((s, f) => s + (f.size || 0), 0));
+          } else if (p.error) {
+            setStatus(p.error, false); render([]);
+          } else {
+            render(p.files || []);
+            setStatus(p.found + ' files hauled up → ' + p.out, true);
+            $('count').textContent = p.found || 0;
+            $('bytes').textContent = fmt((p.files || []).reduce((s, f) => s + (f.size || 0), 0));
+          }
+          return;
+        }
+      }
+      $('pbar').style.display = 'none';
+      setStatus('still descending… (long scan)', true);
+    } catch (e) {
+      setStatus('request failed: ' + e.message, false);
+      $('pbar').style.display = 'none';
+    } finally {
+      $('scan').disabled = false;
+    }
+  }
+
+  function render(files) {
+    if (!files.length) { $('results').innerHTML = '<div class="empty">Nothing surfaced. The abyss kept its secrets.</div>'; return; }
+    $('results').innerHTML = files.map(f => {
+      const name = f.file || f.path || (f.saved || '').split(/[\\/]/).pop() || '';
+      const where = f.offset !== undefined ? '@ ' + f.offset : '';
+      const p = f.saved || '';
+      return '<div class="file" data-path="' + p + '" title="click to inspect">'
+           + '<span class="badge">' + (f.type || 'bin') + '</span>'
+           + '<div class="name">' + name + '</div>'
+           + '<div class="meta">' + fmt(f.size || 0) + (where ? ' · ' + where : '') + '</div>'
+           + '<div class="peek">peek →</div></div>';
+    }).join('');
+    document.querySelectorAll('#results .file').forEach(el => {
+      el.addEventListener('click', () => inspectFile(el.dataset.path));
+    });
+  }
+
+  async function inspectFile(path) {
+    if (!path) return;
+    $('overlay').classList.add('open');
+    $('insp-name').textContent = path;
+    $('insp-type').textContent = '…';
+    $('insp-size').textContent = '';
+    $('insp-warn').textContent = '';
+    $('insp-hex').textContent = '';
+    $('insp-strings').textContent = '';
+    $('insp-scan-out').textContent = '';
+    try {
+      const r = await (await fetch('/api/inspect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path }) })).json();
+      if (!r.ok || !r.info) { $('insp-warn').textContent = r.error || 'could not inspect'; return; }
+      const i = r.info;
+      $('insp-type').textContent = i.type;
+      $('insp-size').textContent = '· ' + fmt(i.size);
+      $('insp-warn').textContent = i.warning;
+      $('insp-hex').textContent = 'HEX   ' + i.hex + '\n\nASCII ' + i.ascii;
+      $('insp-strings').textContent = 'STRINGS\n' + (i.strings.length ? i.strings.join('\n') : '(none — opaque binary)');
+    } catch (e) { $('insp-warn').textContent = 'inspect failed: ' + e.message; }
+  }
+
+  $('insp-close').addEventListener('click', () => $('overlay').classList.remove('open'));
+  $('overlay').addEventListener('click', (e) => { if (e.target === $('overlay')) $('overlay').classList.remove('open'); });
+
+  $('insp-scan').addEventListener('click', async () => {
+    const path = $('insp-name').textContent;
+    if (!path) return;
+    $('insp-scan').disabled = true;
+    $('insp-scan-out').textContent = 'scanning…';
+    try {
+      const r = await (await fetch('/api/scan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path }) })).json();
+      if (!r.ok) { $('insp-scan-out').textContent = r.error || 'scan failed'; }
+      else if (r.status === 'clean') { $('insp-scan-out').textContent = '✔ clean — no threats'; $('insp-scan-out').style.color = 'var(--glow)'; }
+      else if (r.status === 'threats') { $('insp-scan-out').textContent = '⚠ threats found — see output below'; $('insp-scan-out').style.color = '#ffb3a0'; }
+      else { $('insp-scan-out').textContent = '⚠ scan did not complete — see output below'; $('insp-scan-out').style.color = '#ffb3a0'; }
+      if (r.output) { $('insp-strings').textContent += '\n\nSCAN OUTPUT\n' + r.output; }
+    } catch (e) { $('insp-scan-out').textContent = 'scan failed: ' + e.message; }
+    $('insp-scan').disabled = false;
+  });
+
+  $('drive').addEventListener('change', () => {
+    $('image').style.display = $('drive').value ? 'none' : 'block';
+    if (!$('drive').value) return;                       // custom path → keep the user's choice
+    const fs = ($('drive').selectedOptions[0].dataset.fs || '').toUpperCase();
+    $('mode').value = (fs === 'NTFS' || fs === 'REFS') ? 'recover' : 'carve';   // NTFS→MFT, FAT/exFAT/raw→carve
+    updateScanControls();
+  });
+
+  function updateScanControls() {
+    const isRecover = $('mode').value === 'recover';
+    $('scanmode').style.display = isRecover ? '' : 'none';                 // quick/full/targeted are MFT-only
+    $('types-wrap').style.display = (isRecover && $('scanmode').value === 'targeted') ? 'flex' : 'none';
+    $('delonly-wrap').style.display = isRecover ? 'none' : '';             // deleted-only is carve-mode only
+  }
+  $('scanmode').addEventListener('change', updateScanControls);
+  $('mode').addEventListener('change', updateScanControls);
+  updateScanControls();
+
+  async function pickDialog(endpoint, resultEndpoint, inputId, label) {
+    setStatus('opening ' + label + ' dialog — check the taskbar…', true);
+    try {
+      const start = await (await fetch(endpoint, { method: 'POST' })).json();
+      if (!start.ok || !start.token) { setStatus('could not start ' + label + ' dialog', false); return; }
+      for (let i = 0; i < 150; i++) {
+        await new Promise(r => setTimeout(r, 400));
+        const d = await (await fetch(resultEndpoint + start.token)).json();
+        if (d.ready) {
+          if (d.path) { $(inputId).value = d.path; setStatus(label + ' → ' + d.path, true); }
+          else { setStatus('no ' + label + ' selected', false); }
+          return;
+        }
+      }
+      setStatus('timed out waiting for ' + label + ' selection', false);
+    } catch (e) { setStatus('browse failed: ' + e.message, false); }
+  }
+
+  $('browse').addEventListener('click', () => pickDialog('/api/pick-folder', '/api/pick-folder-result/', 'out', 'folder'));
+  $('browse-file').addEventListener('click', () => pickDialog('/api/pick-folder', '/api/pick-folder-result/', 'image', 'folder'));
+
+  async function loadDrives() {
+    try {
+      const d = await (await fetch('/api/drives')).json();
+      if (!d.ok || !d.drives) return;
+      for (const dr of d.drives) {
+        const o = document.createElement('option');
+        o.value = dr.path;
+        o.dataset.fs = dr.fs || '';
+        o.textContent = dr.label + (dr.fs ? ' [' + dr.fs + ']' : '') + (dr.total ? ' · ' + fmt(dr.total) : '') + (dr.kind === 'disk' ? ' (raw disk)' : '');
+        $('drive').appendChild(o);
+      }
+    } catch (e) { /* fail-soft: custom path still works */ }
+  }
+  loadDrives();
+
+  $('scan').addEventListener('click', scan);
+  $('cancel').addEventListener('click', () => {
+    setStatus('cancelling…', true);
+    fetch('/api/cancel', { method: 'POST' });
+  });
+  fetch('/api/status').then(r => r.json()).then(d => { if (d.ok) setStatus('ready', true); }).catch(() => setStatus('offline', false));
+</script>
+</body>
+</html>
